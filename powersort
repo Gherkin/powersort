@@ -38,7 +38,7 @@ do
 		if ! [[ $number =~ ^[0-9]+$ ]]
 		then
 		  echo "-k needs to be followed by a number representing a column"
-		  echo $usage
+		  echo "$usage"
 		  exit 1
 		fi
 		column=$number
@@ -47,7 +47,7 @@ do
 		if ! [ -e "${2:-}" ]
 		then
 		  echo "-f needs to be followed by a path"
-		  echo $usage
+		  echo "$usage"
 		  exit 1
 		fi
 		if ! [ -f "${2:-}" ]
@@ -82,7 +82,7 @@ do
 		if ! [ -e "${1:-}" ]
 		then
 		  echo "input is not a file"
-		  echo $usage
+		  echo "$usage"
 		  exit 1
 		fi
 		if ! [ -f "${1:-}" ]
