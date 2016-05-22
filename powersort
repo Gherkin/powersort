@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+#set -o xtrace
+set -o pipefail
+
+usage="
+A simple program for sorting on columns and/or regex
+usage: $0 [-kfr] [file]
+-r | --regex REGEX
+-f | --file FILE
+-k | --column COLUMN
+-kCOLUMN
+example: $0 -k3 -r [0-9]{2}:[0-9]{2} /var/log/system.log"
+
+if [ $# == 0 ]
+then
+  echo "$usage"
+  exit 1
+fi
+
+while (( $# ))
+do
+	case "$1" in
+	  "-k"|"--column")
+		if ! [[ "${2:-}" =~ ^[0-9]+$ ]]
+		then
+		  echo "-k needs to be followed by a number representing a column"
+		  echo "$usage"
+		  exit 1
+		fi
+		column=$2
+		shift
+		;;
+	  "-k"?)
+		number=${1:2}
+		if ! [[ $number =~ ^[0-9]+$ ]]
+		then
+		  echo "-k needs to be followed by a number representing a column"
+		  echo $usage
+		  exit 1
+		fi
+		column=$number
+		;; 
+      "-f"|"--file")
+		if ! [ -e "${2:-}" ]
+		then
+		  echo "-f needs to be followed by a path"
+		  echo $usage
+		  exit 1
+		fi
+		if ! [ -f "${2:-}" ]
+		then
+		  echo "input file is not a regular file"
+		  read -p "continue anyway? y/n" -r
+		  if [[ $REPLY =~ ^[Yy]$ ]]
+		  then
+			input=$2
+		  else
+			exit 1
+		  fi
+		else
+		  input=$2
+		fi
+		;;
+	  "-h"|"--help")
+		echo "$usage"
+		exit 0
+		;;
+	  "-r"|"--regex")
+		if [ -z "${1:-}" ]
+		then
+		  echo "-r needs to be followed by a string representing a regular expression"
+		  echo $usage
+		  exit 1
+		fi
+		regex=$2
+		shift
+		;;
+	  *)
+		if ! [ -e "${1:-}" ]
+		then
+		  echo "input is not a file"
+		  echo $usage
+		  exit 1
+		fi
+		if ! [ -f "${1:-}" ]
+		then
+		  echo "input file is not a regular file"
+		  read -p "continue anyway? y/n" -r
+		  if [[ $REPLY =~ ^[Yy]$ ]]
+		  then
+			input=$1
+		  else
+			exit 1
+		  fi
+		else
+		  input=$1
+		fi
+		break
+	esac
+	shift
+done
+
+function ifColumn {
+if [ -n "${column:-}" ]
+then
+  awk '{print $'$column'" "$0}'
+else
+  cat
+fi
+}
+
+function ifRegex {
+if [ -n "${regex:-}" ]
+then
+  if [ -n "${column:-}" ]
+  then
+	sed -nE 's/^[^ ]*('$regex') (.*)/\1 \2/p'
+  else
+	sed -nE 's/.*('$regex')/\1 &/p'
+  fi
+else
+  cat
+fi
+}
+
+cat ${input:-/dev/stdin} |
+ifColumn |
+ifRegex |
+sort -k1 |
+sed 's/^[^ ]* //'
