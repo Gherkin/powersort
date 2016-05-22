@@ -117,7 +117,7 @@ if [ -n "${regex:-}" ]
 then
   if [ -n "${column:-}" ]
   then
-	sed -nE 's/^[^ ]*('$regex') (.*)/\1 \2/p'
+	sed -nE 's/^[^ ]*('$regex')[^ ]* (.*)/\1 \2/p'
   else
 	sed -nE 's/.*('$regex')/\1 &/p'
   fi
