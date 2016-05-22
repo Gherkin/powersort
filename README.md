@@ -1,5 +1,4 @@
 #powersort
--
 A simple program that sorts on a column and/or regex on input.  
 
 __usage:__   
