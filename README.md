@@ -50,3 +50,6 @@ echo "
 ```
 - -f|--file FILEPATH  
 chooses a file to act on, otherwise stdin will be used
+
+#TODO
+- maybe let -r contain a capture group
